@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Moedas</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Conversor de Moedas</h1>
+    <form id="conversorForm">
+        <input type="number" id="valor" placeholder="Valor" required>
+        <select id="moedaOrigem" required>
+            <option value="">Selecione a moeda de origem</option>
+        </select>
+        <select id="moedaDestino" required>
+            <option value="">Selecione a moeda de destino</option>
+        </select>
+        <button type="submit">Converter</button>
+    </form>
+    <div id="resultado"></div>
+
+    <h2>Moedas Disponíveis</h2>
+    <ul id="listaMoedas"></ul>
+
+    <script>
+        async function carregarMoedas() {
+            try {
+                const response = await axios.get('/moedas');
+                const moedas = response.data;
+                const listaMoedas = document.getElementById('listaMoedas');
+                const selectOrigem = document.getElementById('moedaOrigem');
+                const selectDestino = document.getElementById('moedaDestino');
+
+                moedas.forEach(moeda => {
+                    // Adicionar à lista de moedas disponíveis
+                    const li = document.createElement('li');
+                    li.textContent = moeda;
+                    listaMoedas.appendChild(li);
+
+                    // Adicionar aos selects
+                    const optionOrigem = document.createElement('option');
+                    optionOrigem.value = moeda;
+                    optionOrigem.textContent = moeda;
+                    selectOrigem.appendChild(optionOrigem);
+
+                    const optionDestino = document.createElement('option');
+                    optionDestino.value = moeda;
+                    optionDestino.textContent = moeda;
+                    selectDestino.appendChild(optionDestino);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar moedas:', error);
+            }
+        }
+
+        document.getElementById('conversorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const valor = document.getElementById('valor').value;
+            const moedaOrigem = document.getElementById('moedaOrigem').value;
+            const moedaDestino = document.getElementById('moedaDestino').value;
+
+            try {
+                const response = await axios.post('/converter', {
+                    valor: valor,
+                    moeda_origem: moedaOrigem,
+                    moeda_destino: moedaDestino
+                });
+                document.getElementById('resultado').innerText = `Resultado: ${response.data.resultado} ${moedaDestino}`;
+            } catch (error) {
+                document.getElementById('resultado').innerText = `Erro: ${error.response.data.erro}`;
+            }
+        });
+
+        window.onload = carregarMoedas;
+    </script>
+</body>
+</html>
